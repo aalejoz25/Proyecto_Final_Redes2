@@ -39,18 +39,11 @@ String sitioWeb = "<!DOCTYPE html>"
 
 
 
-
-                    "console.log(xml);"
-
-
                     "temp = $(xml).find('Temperatura').text();"
                     "hum = $(xml).find('Humedad').text();"
 
-                    "$('#temperatura').text(temp);"
-                    "$('#humedad').text(hum);"
-
-
-
+                    "$('#temperatura').text(temp.concat('ºC'));"
+                    "$('#humedad').text(hum.concat('%'));"
 
 
 
@@ -97,7 +90,7 @@ String sitioWeb = "<!DOCTYPE html>"
 
 "<body>"
     "<div id='webpage'>"
-        "<h1>Estacion de clima</h1>"
+        "<h1>Estacion de Clima</h1>"
         "<p>Temperatura: </p>"
         "<p id='temperatura'>...</p>"
         "<p>Humedad: </p>"
@@ -151,7 +144,7 @@ void loop() {
     float temp = dht.readTemperature(); 
     float hum = dht.readHumidity();  
     xmlTemperatura = String(temp, 1);
-    xmlHumedad = String(hum);
+    xmlHumedad = String(hum,0);
     
   }
 
