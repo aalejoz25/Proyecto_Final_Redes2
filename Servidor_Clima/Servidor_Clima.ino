@@ -1,4 +1,4 @@
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>  // importacion de librerias
 #include <ESP8266WebServer.h>
 #include "DHT.h"
 #define DHTTYPE DHT11 // DHT 11 //Definimos el tipo de sensor
