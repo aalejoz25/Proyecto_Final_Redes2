@@ -1,4 +1,3 @@
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "DHT.h"
@@ -11,7 +10,7 @@ DHT dht(DHTPin, DHTTYPE); // Se crea el objeto dht donde se pasa el pin y el tip
 /*_____________________________________________________________________________________________________________*/
 const char* ssid = "Hugorin 3.0";      // Nombre de la red Wifi
 const char* password = "c0ntr@sen@.nuev@";  //Contraseña de la red
-ESP8266WebServer server(80); //Creacion del objeto servidor, parametro, puerto
+ESP8266WebServer server(4321); //Creacion del objeto servidor, parametro: puerto
 /*_____________________________________________________________________________________________________________*/
 String sitioWeb = "<!DOCTYPE html>" //Almacenamiento de la pagina web en un string
 "<html lang='es'>"
