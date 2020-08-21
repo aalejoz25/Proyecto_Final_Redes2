@@ -2,19 +2,18 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "DHT.h"
+#define DHTTYPE DHT11 // DHT 11 //Definimos el tipo de sensor
 
-#define DHTTYPE DHT11 // DHT 11
-//#define DHTTYPE DHT21 // DHT 21 (AM2301)
-//#define DHTTYPE DHT22 // DHT 22 (AM2302), AM2321
-
-String XML, xmlTemperatura, xmlHumedad;
-unsigned long previousmillis = 0 ;
-uint8_t DHTPin = D2;
-DHT dht(DHTPin, DHTTYPE);
-const char* ssid = "Hugorin 3.0";      // Aqui va ti identificador
-const char* password = "c0ntr@sen@.nuev@";  //Aqui va tu contraseña
-ESP8266WebServer server(80);
-String sitioWeb = "<!DOCTYPE html>"
+String XML, xmlTemperatura, xmlHumedad; // Creacion de variables globaes para crear XML y almacenar Temp y Humedad
+unsigned long previousmillis = 0 ; // Variable global para intervalo de tiempo de lectura
+uint8_t DHTPin = D2; // Variable para definir pin del NodeMCU
+DHT dht(DHTPin, DHTTYPE); // Se crea el objeto dht donde se pasa el pin y el tipo de sensor
+/*_____________________________________________________________________________________________________________*/
+const char* ssid = "Hugorin 3.0";      // Nombre de la red Wifi
+const char* password = "c0ntr@sen@.nuev@";  //Contraseña de la red
+ESP8266WebServer server(80); //Creacion del objeto servidor, parametro, puerto
+/*_____________________________________________________________________________________________________________*/
+String sitioWeb = "<!DOCTYPE html>" //Almacenamiento de la pagina web en un string
 "<html lang='es'>"
 
 "<head>"
@@ -26,38 +25,22 @@ String sitioWeb = "<!DOCTYPE html>"
         "var temp;"
         "var hum;"
         "$(document).on('ready', function() {"
-
             "setInterval(function() {"
                 "$.ajax({"
-
                     "url: 'datos.xml',"
                     "dataType: 'XML',"
                     "success: procesarXML"
                 "});"
 
                 "function procesarXML(xml) {"
-
-
-
                     "temp = $(xml).find('Temperatura').text();"
                     "hum = $(xml).find('Humedad').text();"
-
                     "$('#temperatura').text(temp.concat('ºC'));"
                     "$('#humedad').text(hum.concat('%'));"
-
-
-
-
                 "}"
             "}, 3000);"
-
-
-
-
         "});"
     "</script>"
-
-
 
     "<style>"
         "html {"
@@ -82,12 +65,7 @@ String sitioWeb = "<!DOCTYPE html>"
             "margin-bottom: 10px;"
         "}"
     "</style>"
-
-
-
 "</head>"
-
-
 "<body>"
     "<div id='webpage'>"
         "<h1>Estacion de Clima</h1>"
@@ -97,10 +75,7 @@ String sitioWeb = "<!DOCTYPE html>"
         "<p id='humedad'>...</p>"
     "</div>"
 "</body>"
-
-
 "</html>";
-
 
 
 void setup() {
@@ -110,35 +85,39 @@ void setup() {
   dht.begin();
   Serial.println("Conectandose a: ");
   Serial.print(ssid);
+  /*_______________________________________________________________________________*/
   //Configuracion de IP estatica
-  IPAddress staticIP(192, 168, 0, 213); //ESP static ip
-  IPAddress gateway(192, 168, 0, 1);   //IP Address of your WiFi Router (Gateway)
-  IPAddress subnet(255, 255, 255, 0);  //Subnet mask
-  IPAddress dns(8, 8, 8, 8);  //DNS
-  WiFi.disconnect();  //Prevent connecting to wifi based on previous configuration
-  WiFi.config(staticIP, subnet, gateway, dns);
+  IPAddress IP(192, 168, 0, 213); 
+  IPAddress gateway(192, 168, 0, 1);   
+  IPAddress subnet(255, 255, 255, 0);  
+  IPAddress dns(8, 8, 8, 8);  
+  WiFi.disconnect();  
+  WiFi.config(IP, subnet, gateway, dns);
+  
+  //Verificacion de conexion a la red Wifi
   WiFi.begin(ssid, password);
-  WiFi.mode(WIFI_STA); //WiFi mode station (connect to wifi router only
-  while (WiFi.status() != WL_CONNECTED) { //check wi-fi is connected to wi-fi network
+  WiFi.mode(WIFI_STA); 
+  while (WiFi.status() != WL_CONNECTED) { 
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi conectado..!");
   Serial.print("IP Obtenida: "); Serial.println(WiFi.localIP());
-
-  server.on("/", handleWebsite);
-  server.on("/datos.xml", handleXML);
-  server.onNotFound(handle_NotFound);
-
-  server.begin();
+  /*_______________________________________________________________________________*/
+  //Manejo del servidor
+  server.on("/", handleWebsite); //crea el fichero html
+  server.on("/datos.xml", handleXML); //crea el fichero XML
+  server.onNotFound(handle_NotFound); //en caso de una ruta no existente "error"
+  server.begin(); //inicia el servidor
   Serial.println("Servidor HTTP iniciado");
-
+  /*_______________________________________________________________________________*/
 }
 void loop() {
 
-  unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis(); //tiempo en milisegundos desde que se encendió la tarjeta
 
+//Lectura de  datos cada segundo
   if (currentMillis - previousmillis >= 1000) {
     previousmillis = currentMillis;
     float temp = dht.readTemperature(); 
@@ -147,20 +126,18 @@ void loop() {
     xmlHumedad = String(hum,0);
     
   }
-
-  server.handleClient();
-
+  server.handleClient();//Manejo de solicitudes entrantes de los clientes
 }
 
 void handleWebsite() {
-  server.send(200, "text/html", sitioWeb);
+  server.send(200, "text/html", sitioWeb);//envia el tipo de arvhivo al servidor
 }
 
 void handle_NotFound() {
-  server.send(404, "text/plain", "Not found");
+  server.send(404, "text/plain", "Not found");//envio del error de ruta
 }
 
-void construirXML() {
+void construirXML() { //funcion que construye XML
   XML = "";
   XML += "<?xml version='1.0' encoding='UTF-8'?>";
   XML += "<DHT11>";
@@ -175,7 +152,7 @@ void construirXML() {
   XML += "</DHT11>";
 }
 
-void handleXML() {
+void handleXML() { //envia el XML construido al servidor
   construirXML();
   server.send(200, "text/xml", XML);
 }
